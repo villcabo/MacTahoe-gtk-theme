@@ -47,7 +47,7 @@ usage() {
   helpify "--round, --roundedmaxwindow"   ""                                                  "  Set maximized window to rounded"                 "Default is square"
   helpify "--darker, --darkercolor"       ""                                                  "  Install darker '${THEME_NAME}' dark themes"      ""
   helpify "--silent-mode"                 ""                                                  "  Meant for developers: ignore any confirm prompt and params become more strict" ""
-  helpify "-r, --remove, -u, --uninstall" "[theme|app]"                                       "  theme: remove all installed ${THEME_NAME} themes, app: remove gnome-theme-switcher app"       ""
+  helpify "-r, --remove, -u, --uninstall" "[theme|app]"                                       "  theme: remove all installed ${THEME_NAME} themes, app: remove gnome-theme-switcher app and tahoe-menubar extension"       ""
   helpify "-h, --help"                    ""                                                  "  Show this help"                                  ""
 }
 
@@ -167,6 +167,7 @@ if [[ "${uninstall}" == 'true' ]]; then
     prompt -i "\n  Uninstall 'gnome-theme-switcher' app..."
     rm -rf "${BIN_DIR}/gnome-theme-switcher"
     rm -rf "${APP_DIR}/org.gnome.GTK4ThemeSwitcher.desktop"
+    remove_menubar_extension
   fi
 
   if [[ -f "${MISC_GR_FILE}.bak" ]]; then
@@ -193,6 +194,10 @@ else
   fi
 
   install_app
+
+  if has_command gnome-shell && [[ "$UID" != '0' ]]; then
+    install_menubar_extension
+  fi
 
   if [[ "${libadwaita}" == 'true' ]]; then
     if [[ "$UID" != '0' ]]; then

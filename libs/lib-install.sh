@@ -603,6 +603,23 @@ install_app() {
   cp -r "${REPO_DIR}/other/gnome-theme-switcher/org.gnome.GTK4ThemeSwitcher.desktop" "${APP_DIR}"
 }
 
+MENUBAR_EXTENSION_UUID="tahoe-menubar@mactahoe"
+
+install_menubar_extension() {
+  prompt -w "\n  Installing '${MENUBAR_EXTENSION_UUID}' GNOME Shell extension...\n"
+
+  rm -rf "${GNOME_SHELL_EXTENSION_DIR}/${MENUBAR_EXTENSION_UUID}"
+  mkdir -p "${GNOME_SHELL_EXTENSION_DIR}"
+  cp -r "${REPO_DIR}/other/tahoe-menubar/${MENUBAR_EXTENSION_UUID}" "${GNOME_SHELL_EXTENSION_DIR}"
+
+  # GNOME Shell only discovers new extensions at login on Wayland.
+  prompt -i "  Log out and back in, then run: gnome-extensions enable ${MENUBAR_EXTENSION_UUID}"
+}
+
+remove_menubar_extension() {
+  rm -rf "${GNOME_SHELL_EXTENSION_DIR}/${MENUBAR_EXTENSION_UUID}"
+}
+
 ###############################################################################
 #                                   THEMES                                    #
 ###############################################################################

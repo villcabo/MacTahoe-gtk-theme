@@ -395,6 +395,7 @@ install_shelly() {
   cp -r "${THEME_SRC_DIR}/assets/gnome-shell/theme${theme}${scheme}/"*                        "${TARGET_DIR}/assets"
   cp -r "${THEME_SRC_DIR}/assets/gnome-shell/activities/activities${icon}.svg"                "${TARGET_DIR}/assets/activities.svg"
   cp -r "${THEME_SRC_DIR}/assets/gnome-shell/activities/activities${icon}.svg"                "${TARGET_DIR}/assets/activities-white.svg"
+  cp -r "${THEME_SRC_DIR}/assets/gnome-shell/activities-black/activities${icon}.svg"          "${TARGET_DIR}/assets/activities-black.svg"
 
   (
     cd "${TARGET_DIR}"

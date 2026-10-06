@@ -11,6 +11,57 @@ $panel_height: $menuitem_size;
   $panel_height: $menuitem_size + 4px;
 }
 
+// A transparent menu bar has no surface of its own, so legibility comes from
+// picking dark or light content against whatever wallpaper sits behind it.
+// The tahoe-menubar extension sets .menubar-dark-content or
+// .menubar-light-content on #panel from the wallpaper brightness; without the
+// extension the colour variant decides.
+$menubar_dark_fg: rgba(black, 0.85);
+$menubar_dark_hover: rgba(black, 0.08);
+$menubar_dark_active: rgba(black, 0.14);
+$menubar_light_fg: white;
+$menubar_light_hover: rgba(white, 0.15);
+$menubar_light_active: rgba(white, 0.28);
+
+// Ubuntu keeps its Yaru stylesheet loaded underneath any user theme, and Yaru
+// paints status icons and workspace dots #f2f2f2 with !important; only an
+// !important from the theme outranks it.
+@mixin menubar-content($fg, $hover, $active, $activities_asset) {
+  color: $fg;
+
+  .system-status-icon { color: $fg !important; }
+
+  .panel-button {
+    color: $fg;
+
+    &:hover {
+      color: $fg;
+      box-shadow: inset 0 0 0 1000px $hover;
+
+      &.clock-display .clock { box-shadow: inset 0 0 0 1000px $hover; }
+    }
+
+    &:active, &:overview, &:focus, &:checked {
+      color: $fg;
+      box-shadow: inset 0 0 0 1000px $active;
+
+      &.clock-display .clock { box-shadow: inset 0 0 0 1000px $active; }
+    }
+
+    &#panelActivities {
+      @if $activities =='icon' {
+        background-image: url("assets/#{$activities_asset}");
+      }
+
+      @else {
+        color: $fg;
+
+        .workspace-dot { background-color: $fg !important; }
+      }
+    }
+  }
+}
+
 #panel.login-screen {
   @if $scale !='default' {
     @include fontsize($base_font_size * 2 - 2);
@@ -126,7 +177,8 @@ $panel_height: $menuitem_size;
 
   @if $panel_style =='default' {
     height: $panel_height + $container_padding * 2 !important;
-    background-color: transparent;
+    // Outranks Yaru's #panel { background-color: #131313 !important } on Ubuntu.
+    background-color: transparent !important;
   }
 
   @else {
@@ -362,6 +414,22 @@ $panel_height: $menuitem_size;
     }
   }
 
+  // Must stay above the overview / lock-screen block below: same specificity,
+  // so source order lets those states keep their own colours.
+  @if $panel_style =='default' and $trans =='true' {
+    @if $variant =='light' {
+      @include menubar-content($menubar_dark_fg, $menubar_dark_hover, $menubar_dark_active, 'activities-black.svg');
+    }
+
+    &.menubar-dark-content {
+      @include menubar-content($menubar_dark_fg, $menubar_dark_hover, $menubar_dark_active, 'activities-black.svg');
+    }
+
+    &.menubar-light-content {
+      @include menubar-content($menubar_light_fg, $menubar_light_hover, $menubar_light_active, 'activities-white.svg');
+    }
+  }
+
   Gjs_AggregateMenu.panel-button,
   Gjs_ui_panel_AggregateMenu.panel-button,
   Gjs_ui_panel_QuickSettings.panel-button {
@@ -400,12 +468,14 @@ $panel_height: $menuitem_size;
   &.unlock-screen,
   &.login-screen,
   &.lock-screen {
-    background-color: transparent;
+    background-color: transparent !important;
     box-shadow: none;
 
     StLabel, StIcon {
       color: $light_alt_fg_color;
     }
+
+    .system-status-icon { color: $light_alt_fg_color !important; }
 
     .panel-button {
       box-shadow: none;
@@ -451,6 +521,12 @@ $panel_height: $menuitem_size;
           .workspace-dot {
             background-color: $light_fg_color;
           }
+        }
+      }
+
+      @else {
+        &#panelActivities {
+          background-image: url("assets/activities-white.svg");
         }
       }
     }

@@ -1,6 +1,7 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
+import St from 'gi://St';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -15,15 +16,74 @@ const CONTRAST_CROSSOVER = 0.179;
 const SAMPLE_WIDTH = 512;
 
 // macOS draws third-party menu bar items as monochrome templates tinted to the
-// bar. Tray apps ship fixed-colour icons instead (Dropbox even loads its own
-// image directory under a PID-suffixed id, so per-app custom icons cannot
-// target it), so the AppIndicator extension's desaturate + brightness effect
-// is the only hook that reaches all of them.
+// bar. Tray apps ship fixed-colour icons instead, so the AppIndicator
+// extension's desaturate + brightness effect recolours all of them, and its
+// custom-icons setting swaps the filled glyphs for line icons.
 const APPINDICATOR_SCHEMA = 'org.gnome.shell.extensions.appindicator';
+// Full ±1 turns every opaque pixel solid black or white, i.e. a template image
+// matching the status icons.
 const TRAY_BRIGHTNESS = {
-    [DARK_CONTENT]: -0.8,
-    [LIGHT_CONTENT]: 0.8,
+    [DARK_CONTENT]: -1.0,
+    [LIGHT_CONTENT]: 1.0,
 };
+
+const SNI_WATCHER = 'org.kde.StatusNotifierWatcher';
+const SNI_WATCHER_PATH = '/StatusNotifierWatcher';
+const SNI_ITEM = 'org.kde.StatusNotifierItem';
+
+// Matched by prefix because Dropbox appends its PID to its tray id, which
+// rules out a static custom-icons entry.
+const TRAY_ICON_REPLACEMENTS = [
+    {idPrefix: 'dropbox-client-', iconName: 'dropbox-symbolic'},
+    {idPrefix: 'livepatch', iconName: 'app-safety-ok-symbolic'},
+    {idPrefix: 'unattended-upgrade', iconName: 'software-update-available-symbolic'},
+    {idPrefix: 'whatsdesk_status_icon', iconName: 'chat-symbolic'},
+    {idPrefix: 'CopyQ_', iconName: 'clipboard-outline-symbolic'},
+];
+
+// AppIndicator creates the panel button only after reading a new item's
+// properties, so replacing right on registration would miss it.
+const TRAY_REPLACE_DELAY_MS = 1000;
+
+Gio._promisify(Gio.DBusConnection.prototype, 'call');
+
+function findReplacement(id) {
+    return TRAY_ICON_REPLACEMENTS.find(({idPrefix}) => id.startsWith(idPrefix));
+}
+
+// Apps that pass their own IconThemePath (Dropbox, WhatsDesk) make
+// AppIndicator look custom icon *names* up only in that path, so the
+// replacement has to be an absolute file path from the active icon theme.
+function resolveIconPath(iconName) {
+    const iconInfo = new St.IconTheme().lookup_icon_for_scale(iconName, 16, 1, 0);
+    return iconInfo?.get_filename() ?? null;
+}
+
+// Must stay async: the StatusNotifierWatcher lives inside gnome-shell itself
+// (AppIndicator), so a synchronous call blocks the shell until it times out.
+async function getDBusProperty(busName, objectPath, iface, property) {
+    const reply = await Gio.DBus.session.call(busName, objectPath,
+        'org.freedesktop.DBus.Properties', 'Get',
+        new GLib.Variant('(ss)', [iface, property]),
+        new GLib.VariantType('(v)'), Gio.DBusCallFlags.NONE, -1, null);
+    return reply.recursiveUnpack()[0];
+}
+
+function findIconActors(actor, found = []) {
+    if (actor._customIcons)
+        found.push(actor);
+    for (const child of actor.get_children?.() ?? [])
+        findIconActors(child, found);
+    return found;
+}
+
+// The watcher lists items as "bus.name" or, for Ayatana ones, "bus.name@/path".
+function splitItemAddress(address) {
+    const at = address.indexOf('@');
+    return at < 0
+        ? [address, '/StatusNotifierItem']
+        : [address.slice(0, at), address.slice(at + 1)];
+}
 
 function linearize(channel) {
     const c = channel / 255;
@@ -86,15 +146,30 @@ export default class TahoeMenuBarExtension extends Extension {
             [this._interfaceSettings, this._interfaceSettings.connect('changed::color-scheme', () => this._update())],
             [Main.layoutManager, Main.layoutManager.connect('monitors-changed', () => this._update())],
         ];
+        this._trayItemSubscription = Gio.DBus.session.signal_subscribe(null, SNI_WATCHER,
+            'StatusNotifierItemRegistered', SNI_WATCHER_PATH, null, Gio.DBusSignalFlags.NONE,
+            () => this._scheduleTrayIconReplacement());
+        this._watchedIconActors = new Map();
         this._update();
+        this._replaceTrayIcons();
     }
 
     disable() {
         this._cancellable.cancel();
         for (const [object, id] of this._connections)
             object.disconnect(id);
+        Gio.DBus.session.signal_unsubscribe(this._trayItemSubscription);
+        if (this._replaceSourceId)
+            GLib.source_remove(this._replaceSourceId);
+        for (const [actor, handlerId] of this._watchedIconActors)
+            actor.disconnect(handlerId);
         this._setContent(null);
+        if (this._traySettings)
+            this._setTrayIconReplacements([]);
 
+        this._trayItemSubscription = 0;
+        this._replaceSourceId = 0;
+        this._watchedIconActors = null;
         this._connections = null;
         this._cancellable = null;
         this._traySettings = null;
@@ -182,5 +257,89 @@ export default class TahoeMenuBarExtension extends Extension {
             this._traySettings.reset('icon-saturation');
             this._traySettings.reset('icon-brightness');
         }
+    }
+
+    async _replaceTrayIcons() {
+        if (!this._traySettings)
+            return;
+
+        let addresses;
+        try {
+            addresses = await getDBusProperty(SNI_WATCHER, SNI_WATCHER_PATH, SNI_WATCHER,
+                'RegisteredStatusNotifierItems');
+        } catch (error) {
+            console.warn(`${this.metadata.uuid}: cannot list tray items: ${error.message}`);
+            return;
+        }
+
+        const replacements = [];
+        for (const address of addresses) {
+            const [busName, objectPath] = splitItemAddress(address);
+            let id;
+            try {
+                id = await getDBusProperty(busName, objectPath, SNI_ITEM, 'Id');
+            } catch {
+                continue; // the item went away while we were asking
+            }
+
+            const replacement = findReplacement(id);
+            const iconPath = replacement && resolveIconPath(replacement.iconName);
+            if (iconPath)
+                replacements.push([id, iconPath, '']);
+        }
+
+        // disable() may have run while the D-Bus calls were in flight.
+        if (!this._traySettings)
+            return;
+
+        this._setTrayIconReplacements(replacements);
+        this._watchReplacedIconActors();
+    }
+
+    _scheduleTrayIconReplacement() {
+        if (this._replaceSourceId)
+            return;
+
+        this._replaceSourceId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, TRAY_REPLACE_DELAY_MS, () => {
+            this._replaceSourceId = 0;
+            this._replaceTrayIcons();
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    // AppIndicator draws pixmap-only items (CopyQ) as the icon actor's own
+    // St.ImageContent and never clears it when a custom icon later sets a
+    // gicon, so the old pixmap keeps painting under the replacement.
+    _watchReplacedIconActors() {
+        for (const button of Object.values(Main.panel.statusArea)) {
+            const id = button?._indicator?.id;
+            if (!id || !findReplacement(id))
+                continue;
+
+            for (const actor of findIconActors(button)) {
+                this._dropStalePixmap(actor);
+                if (this._watchedIconActors.has(actor))
+                    continue;
+
+                this._watchedIconActors.set(actor,
+                    actor.connect('notify::gicon', () => this._dropStalePixmap(actor)));
+                actor.connect('destroy', () => this._watchedIconActors?.delete(actor));
+            }
+        }
+    }
+
+    _dropStalePixmap(actor) {
+        if (actor.gicon && actor.content)
+            actor.content = null;
+    }
+
+    // Keeps any custom-icons entries the user set by hand; only entries whose
+    // id matches TRAY_ICON_REPLACEMENTS belong to this extension.
+    _setTrayIconReplacements(replacements) {
+        const current = this._traySettings.get_value('custom-icons').deepUnpack();
+        const userEntries = current.filter(([id]) => !findReplacement(id));
+        const entries = [...userEntries, ...replacements];
+        if (JSON.stringify(entries) !== JSON.stringify(current))
+            this._traySettings.set_value('custom-icons', new GLib.Variant('a(sss)', entries));
     }
 }

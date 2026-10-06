@@ -254,8 +254,8 @@ $toggle_shadow: if($trans =='true', inset 0 0 4px rgba(white, 0.35), 0 5px 10px 
   background-color: $toggle_bg_color;
   border-radius: $wm_radius;
   box-shadow: $toggle_shadow !important;
-  min-height: 40px;
-  padding: $base_padding * 3 !important;
+  min-height: 32px;
+  padding: $base_padding * 1.5 $base_padding * 3 !important;
   color: $toggle_fg_color;
 
   & > StBoxLayout {
@@ -264,7 +264,7 @@ $toggle_shadow: if($trans =='true', inset 0 0 4px rgba(white, 0.35), 0 5px 10px 
 
   .icon-button {
     padding: $base_padding * 1.5;
-    margin: $base_padding * 2 0;
+    margin: 0;
     color: $toggle_fg_color;
 
     &:hover {

@@ -60,6 +60,9 @@ $po_radius: if($laptop == 'false', 16px, 14px);
 $dash_radius: if($laptop == 'false', 24px, 18px);
 $base_border_radius: if($laptop == 'false', 8px, 8px);
 $modal_radius: 24px + $base_padding * 3;
+// Shared by quick settings and the calendar: Blur my Shell clips both with a
+// single quick-settings-corner-radius, so they must agree.
+$control_center_radius: 21px + $base_padding * 3;
 $maximized_radius: 0;
 
 @if $max_window_style == 'round' {

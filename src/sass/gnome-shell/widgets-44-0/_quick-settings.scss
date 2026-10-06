@@ -1,7 +1,7 @@
 .quick-settings {
   padding: $base_padding * 5 !important;
   padding-top: $base_padding * 2 !important;
-  border-radius: 21px + $base_padding * 3 !important;
+  border-radius: $control_center_radius !important;
   margin-top: $base_padding * 2 !important;
   margin-bottom: $base_padding * 2 + 20px !important;
   margin-left: $base_padding * 2 + 20px !important;

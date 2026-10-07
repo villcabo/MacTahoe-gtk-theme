@@ -262,10 +262,11 @@ $panel_hover:                       if($trans == 'true', $panel_divider, if($var
 $panel_active:                      if($trans == 'true', $panel_track, if($variant == 'light', mix(black, $panel_bg, 15%), mix(white, $panel_bg, 28%)));
 
 $dash_fg:                           if($variant == 'light', black, white);
-// Blur my Shell cannot give ubuntu-dock a rounded backdrop blur (its static
-// blur is clipped to a square, its dynamic blur is not clipped at all), so the
-// dock carries the frost (light) or smoke (dark) on its own surface.
-$dash_bg:                           if($trans == 'false',  $panel_bg, if($variant == 'light', rgba(white, 0.45), rgba(#1e1e1e, 0.5)));
+// The dock carries its own frost (light) or smoke (dark) so it reads as glass
+// even without a backdrop blur. The smoke stays light because Blur my Shell's
+// static dock blur darkens underneath it too; stacked, a heavier tint went
+// near-black.
+$dash_bg:                           if($trans == 'false',  $panel_bg, if($variant == 'light', rgba(white, 0.45), rgba(#1e1e1e, 0.3)));
 $dash_highlight:                    if($variant == 'light', rgba(white, 0.55), rgba(white, 0.15));
 
 // Entry colors

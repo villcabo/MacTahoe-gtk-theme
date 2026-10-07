@@ -61,7 +61,9 @@ A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliui
 - **Blur my Shell:**
   - Panel: blur on, brightness 0.85.
   - Popups: blur on, **static**. The radii match the theme: notification 14, menu 14, quick-settings 33, osd 24, dialog 40. The `pipeline_default_rounded` pipeline had to be re-added to `pipelines`.
-  - Dock: blur on, **static**. Dynamic dock blur can never be rounded, because it uses a `DummyPipeline` with no corner effect.
+  - Dock: blur on, **static**, using the "Rounded" pipeline with blur brightness 0.9. With 0.6 plus the theme's smoke, the dark dock went near-black.
+  - The pipeline's corner radius (26) is ignored now: the patched Blur my Shell takes it from `.dash-background` (28). This was verified after a re-login on 2026-10-07: clean corners.
+  - Dynamic dock blur can never be rounded, because it uses a `DummyPipeline` with no corner effect.
 - **Ubuntu Dock:**
   - `custom-background-color=false` and `transparency-mode=DEFAULT`, because its inline style overrode the theme.
   - `custom-theme-customize-running-dots=false`, because its dark dots were invisible on the dark dock.
@@ -84,6 +86,5 @@ A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliui
 
 ## Pending
 
-- Verify the Blur my Shell fork after a re-login. The "Rounded" pipeline radius was left at 26 on purpose: clean dock corners prove the radius now comes from the theme (28).
 - Auto-switching light/dark across GTK3, shell and icons together is not implemented; only libadwaita follows `color-scheme`.
 - Optional: propose the Blur my Shell dock fix upstream as a PR.

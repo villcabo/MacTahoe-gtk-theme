@@ -9,7 +9,7 @@ A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliui
 - Fork: `villcabo/MacTahoe-gtk-theme`, branch **`tahoe`** (default branch). One branch holds both variants: the SCSS compiles light and dark from the same sources, so never split work into per-variant branches.
 - Remotes: `origin` = the fork, `upstream` = vinceliuice. Sync with `git fetch upstream && git rebase upstream/main` (a force-push follows).
 - Sibling forks used by the same setup:
-  - `villcabo/blur-my-shell`, branch `feat/dock-radius-from-theme`: the static dock blur takes its corner radius from the theme's `.dash-background`.
+  - `villcabo/blur-my-shell`, branch `feat/dock-radius-from-theme`: the static dock blur takes its corner radius from the theme's `.dash-background`. Submitted upstream as issue aunetx/blur-my-shell#1064 and PR #1065, against `master`. Upstream is rewriting this code in `refactor/unified-blur-backend` (v75), which adds a manual `dash-to-dock/corner-radius` setting; we offered to port the fix there.
   - `villcabo/WhiteSur-gtk-theme`, branch `tahoe-mode`: the user's earlier, abandoned Tahoe experiment, kept for reference.
 
 ## Install on this machine
@@ -87,4 +87,4 @@ A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliui
 ## Pending
 
 - Auto-switching light/dark across GTK3, shell and icons together is not implemented; only libadwaita follows `color-scheme`.
-- Optional: propose the Blur my Shell dock fix upstream as a PR.
+- Follow up on Blur my Shell PR #1065: answer review comments, or port the fix to `refactor/unified-blur-backend` if the maintainers prefer. If it merges, the local `make install` build can be replaced by the official release.

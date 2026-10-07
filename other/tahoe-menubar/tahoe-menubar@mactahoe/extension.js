@@ -37,7 +37,8 @@ const TRAY_ICON_REPLACEMENTS = [
     {idPrefix: 'dropbox-client-', iconName: 'dropbox-symbolic'},
     {idPrefix: 'livepatch', iconName: 'app-safety-ok-symbolic'},
     {idPrefix: 'unattended-upgrade', iconName: 'software-update-available-symbolic'},
-    {idPrefix: 'whatsdesk_status_icon', iconName: 'chat-symbolic'},
+    // No icon theme ships a line WhatsApp glyph, so it is bundled here.
+    {idPrefix: 'whatsdesk_status_icon', iconFile: 'icons/whatsapp-symbolic.svg'},
     {idPrefix: 'CopyQ_', iconName: 'clipboard-outline-symbolic'},
 ];
 
@@ -283,7 +284,7 @@ export default class TahoeMenuBarExtension extends Extension {
             }
 
             const replacement = findReplacement(id);
-            const iconPath = replacement && resolveIconPath(replacement.iconName);
+            const iconPath = replacement && this._resolveReplacementPath(replacement);
             if (iconPath)
                 replacements.push([id, iconPath, '']);
         }
@@ -294,6 +295,12 @@ export default class TahoeMenuBarExtension extends Extension {
 
         this._setTrayIconReplacements(replacements);
         this._watchReplacedIconActors();
+    }
+
+    _resolveReplacementPath({iconFile, iconName}) {
+        return iconFile
+            ? GLib.build_filenamev([this.path, iconFile])
+            : resolveIconPath(iconName);
     }
 
     _scheduleTrayIconReplacement() {

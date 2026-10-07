@@ -40,6 +40,8 @@ const TRAY_ICON_REPLACEMENTS = [
     // No icon theme ships a line WhatsApp glyph, so it is bundled here.
     {idPrefix: 'whatsdesk_status_icon', iconFile: 'icons/whatsapp-symbolic.svg'},
     {idPrefix: 'CopyQ_', iconName: 'clipboard-outline-symbolic'},
+    // RustDesk ids its item "tray-icon tray app <pid>-<n>" and draws a PNG.
+    {idPrefix: 'tray-icon tray app', iconName: 'preferences-desktop-remote-desktop-symbolic'},
 ];
 
 // AppIndicator creates the panel button only after reading a new item's

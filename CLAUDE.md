@@ -66,6 +66,12 @@ A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliui
   - `custom-background-color=false` and `transparency-mode=DEFAULT`, because its inline style overrode the theme.
   - `custom-theme-customize-running-dots=false`, because its dark dots were invisible on the dark dock.
 - `light-style` extension disabled.
+- **Wallpaper:** MacTahoe day (light) and night (dark), installed by `wallpaper/install-gnome-backgrounds.sh` into `~/.local/share/backgrounds/MacTahoe`. The WhiteSur-wallpapers collection is installed too.
+  - That installer only copies the images. To make them show up in Settings → Appearance as light/dark pairs, they are registered in `~/.local/share/gnome-background-properties/macos-wallpapers.xml` (WhiteSur, Monterey, Ventura, Sonoma, plus the two originals).
+- **Login screen (GDM):** installed with `sudo ./tweaks.sh -g -i apple -h smaller`.
+  - On Ubuntu this overwrites `/usr/share/gnome-shell/theme/Yaru/gnome-shell-theme.gresource` (backup `.bak` next to it). That same file is the base stylesheet the Ubuntu session loads under user themes, so Yaru's forced panel `!important` rules are gone from it too.
+  - Revert with `sudo ./tweaks.sh -g -r`.
+  - A `yaru-theme-gnome-shell` package update restores Ubuntu's login, so re-run the command afterwards.
 - **Light mode:** gtk `MacTahoe-Light-solid`, shell `MacTahoe-Light`, icons `MacTahoe-light`, color-scheme `default`.
 - **Dark mode:** gtk `MacTahoe-Dark-solid`, shell `MacTahoe-Dark`, icons `MacTahoe-dark`, color-scheme `prefer-dark`.
 

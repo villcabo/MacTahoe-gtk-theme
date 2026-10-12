@@ -42,6 +42,10 @@ const TRAY_ICON_REPLACEMENTS = [
     {idPrefix: 'CopyQ_', iconName: 'clipboard-outline-symbolic'},
     // RustDesk ids its item "tray-icon tray app <pid>-<n>" and draws a PNG.
     {idPrefix: 'tray-icon tray app', iconName: 'preferences-desktop-remote-desktop-symbolic'},
+    // Telegram asks for its own filled "-attention-symbolic" plane.
+    {idPrefix: 'TelegramDesktop', iconName: 'mail-send-symbolic'},
+    // Chrome's background-apps item: its colour logo tints to a solid disc.
+    {idPrefix: 'chrome_status_icon', iconName: 'google-chrome-symbolic'},
 ];
 
 // AppIndicator creates the panel button only after reading a new item's

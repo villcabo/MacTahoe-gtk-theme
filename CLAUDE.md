@@ -34,9 +34,13 @@ A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliui
   - It tints AppIndicator tray icons as macOS-style templates: saturation 1 and brightness ±1.
   - It swaps filled tray glyphs for line icons (`TRAY_ICON_REPLACEMENTS`, matched by id prefix because Dropbox's id carries its PID). The WhatsApp glyph is bundled in `icons/`.
   - It works around an appindicators bug: pixmap-only items (CopyQ) keep their old `St.ImageContent` under a custom `gicon`, so the extension clears `content` on `notify::gicon`.
+  - It moves the clock to the far right of the bar, the volume/brightness OSD under the bar's right end, and notification banners to the top right (`Main.messageTray.bannerAlignment`), as on macOS. `disable()` puts all three back.
+  - A legacy XEmbed tray icon (shown as `appindicator-legacy:*`) cannot be tinted: the template effect paints its opaque background solid black. Qt apps fall back to XEmbed when they start before the StatusNotifierWatcher exists, so start them after it (the user's `keepassxc-autounlock` script waits for `org.kde.StatusNotifierWatcher`).
+- **Quick settings toggles** follow macOS's Control Center: an active toggle keeps its glass module and lights its icon circle in the accent colour, in both variants. Every toggle gets the icon circle except the battery and background-apps buttons.
+- **Dock running dots:** one dot per app (`running-indicator-style='DOT'` in dconf), all the same colour; the focused app's dot is no longer accent-coloured.
 - **Dock** (`src/sass/_colors.scss` `$dash_bg` / `$dash_highlight`): the dock carries its own frost (light) or smoke (dark), so it reads as glass with or without Blur my Shell.
 - **Quick settings** (`widgets-48-0/_quick-settings.scss`):
-  - A light-glass palette: dark text, translucent white modules, accent-filled checked toggles. Upstream's transparent palette assumed dark glass.
+  - A light-glass palette: dark text and translucent white modules. Upstream's transparent palette assumed dark glass.
   - Compact slider rows.
 - **Shared radius:** `$control_center_radius` (33 px) in `_variables.scss` is used by both quick settings and the calendar, because Blur my Shell clips both with a single radius.
 
@@ -46,7 +50,11 @@ A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliui
 - **Symbolic icons must be fill-only.** Symbolic rendering forces `fill`, so a `stroke` outline renders as a solid blob. Draw outlines as evenodd outer and inner shapes.
 - **St caches icon textures by path.** A changed SVG at the same path shows the old image until re-login; test it under a new filename.
 - **Never call the StatusNotifierWatcher synchronously** from inside gnome-shell. It lives in the shell (appindicators), so the call blocks the shell until the D-Bus timeout. Use async calls only.
-- **kitty runs on X11:** its titlebar comes from `mutter-x11-frames` and only re-themes after re-login.
+- **kitty must run on X11** (`linux_display_server x11` in `kitty.conf`): on Wayland it draws its own titlebar with grey buttons on the right. On X11 its titlebar comes from `mutter-x11-frames`, gets the theme's traffic lights, and only re-themes after re-login.
+- **Apps that draw their own titlebar** ignore the theme until set to a native frame: Telegram *Use system window frame*, Obsidian *Window frame style: Native*, Chrome theme *GTK*. Bruno has no such option.
+  - VS Code stays on its own (custom) titlebar on purpose. `"window.titleBarStyle": "native"` gives traffic lights, but the menu then needs its own row, which takes too much height for the user; the hamburger menu only exists in the custom titlebar.
+  - A macOS-style global menu (app menus in the top bar) is not an option on GNOME 50 Wayland: it needs apps to export their menus over D-Bus (dbusmenu), which Electron and GTK4 apps do not do there.
+- **To capture without disturbing the session**, use `Shell.Screenshot` inside `Eval` (menus stay open) and `windowActor.get_image(null).writeToPNG(path)` for a single window, even an unfocused one.
 - A "missing" audio device `>` button in quick settings is not a theme bug: GNOME shows it only with more than one *available* route (check with `pw-dump`, `EnumRoute`).
 
 ## Verifying visual changes
@@ -61,12 +69,14 @@ A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliui
 - **Blur my Shell:**
   - Panel: blur on, brightness 0.85.
   - Popups: blur on, **static**. The radii match the theme: notification 14, menu 14, quick-settings 33, osd 24, dialog 40. The `pipeline_default_rounded` pipeline had to be re-added to `pipelines`.
+  - Popups: `preserve-shell-theme=true`. Without it the popup style (default "automatic") adds `.bms-popup-background-{dark,light}` to `Main.uiGroup`, and Blur my Shell's stylesheet repaints every quick-settings toggle in GNOME blue with `!important` at higher specificity than the theme, so no theme rule can win.
   - Dock: blur on, **static**, using the "Rounded" pipeline with blur brightness 0.9. With 0.6 plus the theme's smoke, the dark dock went near-black.
   - The pipeline's corner radius (26) is ignored now: the patched Blur my Shell takes it from `.dash-background` (28). This was verified after a re-login on 2026-10-07: clean corners.
   - Dynamic dock blur can never be rounded, because it uses a `DummyPipeline` with no corner effect.
 - **Ubuntu Dock:**
   - `custom-background-color=false` and `transparency-mode=DEFAULT`, because its inline style overrode the theme.
   - `custom-theme-customize-running-dots=false`, because its dark dots were invisible on the dark dock.
+  - `running-indicator-style='DOT'`: macOS shows one dot per running app; `DOTS` showed one per window.
 - `light-style` extension disabled.
 - **Wallpaper:** MacTahoe day (light) and night (dark), installed by `wallpaper/install-gnome-backgrounds.sh` into `~/.local/share/backgrounds/MacTahoe`. The WhiteSur-wallpapers collection is installed too.
   - That installer only copies the images. To make them show up in Settings → Appearance as light/dark pairs, they are registered in `~/.local/share/gnome-background-properties/macos-wallpapers.xml` (WhiteSur, Monterey, Ventura, Sonoma, plus the two originals).

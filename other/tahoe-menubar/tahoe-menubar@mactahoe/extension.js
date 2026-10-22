@@ -7,6 +7,8 @@ import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
+import {AppleMenuButton, AppMenuButton} from './appleMenu.js';
+
 const DARK_CONTENT = 'menubar-dark-content';
 const LIGHT_CONTENT = 'menubar-light-content';
 
@@ -164,6 +166,7 @@ export default class TahoeMenuBarExtension extends Extension {
             // Keeps the clock last when another extension appends a status item.
             [Main.panel._rightBox, Main.panel._rightBox.connect('child-added', () => this._keepClockLast())],
         ];
+        this._addAppleMenus();
         this._moveClockRight();
         this._placeOsdWindows();
         // macOS slides notification banners in at the top right.
@@ -185,6 +188,7 @@ export default class TahoeMenuBarExtension extends Extension {
             GLib.source_remove(this._replaceSourceId);
         for (const [actor, handlerId] of this._watchedIconActors)
             actor.disconnect(handlerId);
+        this._removeAppleMenus();
         this._restoreClock();
         this._restoreOsdWindows();
         Main.messageTray.bannerAlignment = Clutter.ActorAlign.CENTER;
@@ -200,6 +204,24 @@ export default class TahoeMenuBarExtension extends Extension {
         this._traySettings = null;
         this._interfaceSettings = null;
         this._backgroundSettings = null;
+    }
+
+    // The Apple menu replaces the Activities button; Super still opens the
+    // overview.
+    _addAppleMenus() {
+        Main.panel.statusArea.activities.container.hide();
+        this._appleMenu = new AppleMenuButton();
+        this._appMenu = new AppMenuButton();
+        Main.panel.addToStatusArea(`${this.metadata.uuid}-apple`, this._appleMenu, 0, 'left');
+        Main.panel.addToStatusArea(`${this.metadata.uuid}-app`, this._appMenu, 1, 'left');
+    }
+
+    _removeAppleMenus() {
+        this._appleMenu.destroy();
+        this._appMenu.destroy();
+        this._appleMenu = null;
+        this._appMenu = null;
+        Main.panel.statusArea.activities.container.show();
     }
 
     // macOS keeps the clock at the far right of the menu bar, after the status

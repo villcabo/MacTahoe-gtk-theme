@@ -9,7 +9,7 @@ A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliui
 - Fork: `villcabo/MacTahoe-gtk-theme`, branch **`tahoe`** (default branch). One branch holds both variants: the SCSS compiles light and dark from the same sources, so never split work into per-variant branches.
 - Remotes: `origin` = the fork, `upstream` = vinceliuice. Sync with `git fetch upstream && git rebase upstream/main` (a force-push follows).
 - Sibling forks used by the same setup:
-  - `villcabo/blur-my-shell`, branch `feat/dock-radius-from-theme`: the static dock blur takes its corner radius from the theme's `.dash-background`. Submitted upstream as issue aunetx/blur-my-shell#1064 and PR #1065, against `master`. Upstream is rewriting this code in `refactor/unified-blur-backend` (v75), which adds a manual `dash-to-dock/corner-radius` setting; we offered to port the fix there.
+  - `villcabo/blur-my-shell`, branch `feat/dock-radius-from-theme`: obsolete. It made the static dock blur take its corner radius from the theme's `.dash-background` (issue aunetx/blur-my-shell#1064, PR #1065). Upstream closed the PR on 2026-10-07 because the refactor release does the same (#976, #1044). Blur my Shell v76 from extensions.gnome.org is installed now and already replaced the local build.
   - `villcabo/WhiteSur-gtk-theme`, branch `tahoe-mode`: the user's earlier, abandoned Tahoe experiment, kept for reference.
 
 ## Install on this machine
@@ -72,13 +72,19 @@ A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliui
   - Popups: blur on, **static**. The radii match the theme: notification 14, menu 14, quick-settings 33, osd 24, dialog 40. The `pipeline_default_rounded` pipeline had to be re-added to `pipelines`.
   - Popups: `preserve-shell-theme=true`. Without it the popup style (default "automatic") adds `.bms-popup-background-{dark,light}` to `Main.uiGroup`, and Blur my Shell's stylesheet repaints every quick-settings toggle in GNOME blue with `!important` at higher specificity than the theme, so no theme rule can win.
   - Dock: blur on, **static**, using the "Rounded" pipeline with blur brightness 0.9. With 0.6 plus the theme's smoke, the dark dock went near-black.
-  - The pipeline's corner radius (26) is ignored now: the patched Blur my Shell takes it from `.dash-background` (28). This was verified after a re-login on 2026-10-07: clean corners.
+  - Since v76 the dock blur reads its corner radius from the theme's `.dash-background` (28), so the pipeline needs no corner effect. Pipelines no longer accept a `corner` effect at all ("effect \"corner\" not found"): each component has its own `corner-radius` key.
   - Dynamic dock blur can never be rounded, because it uses a `DummyPipeline` with no corner effect.
 - **Ubuntu Dock:**
   - `custom-background-color=false` and `transparency-mode=DEFAULT`, because its inline style overrode the theme.
   - `custom-theme-customize-running-dots=false`, because its dark dots were invisible on the dark dock.
   - `running-indicator-style='DOT'`: macOS shows one dot per running app; `DOTS` showed one per window.
 - `light-style` extension disabled.
+- **Spotlight:** Vicinae (user install in `~/.local`, systemd user service `vicinae`, GNOME extension `vicinae@dagimg-dot`) on `Super+Space` via custom keybinding `custom9` running `vicinae toggle`.
+  - `Super+Space` was freed from `switch-input-source` (now only `XF86Keyboard`) and from IBus's `triggers`: with a single keyboard layout neither did anything. Do not give it back to them.
+  - Avoid `Ctrl+Space`: VS Code and IDEs use it for completion.
+  - Config in `~/.config/vicinae/settings.json`: themes `mactahoe-dark`/`mactahoe-light` (sources in `other/vicinae/`, copied to `~/.local/share/vicinae/themes/`), rounding 26, opacity 0.82, telemetry off, close on focus loss. Vicinae re-reads it only after `systemctl --user restart vicinae`.
+  - Glass: Blur my Shell `applications` blurs only the whitelisted `vicinae` window (`enable-all=false`, static, pipeline "Rounded", `corner-radius=26` to match Vicinae's rounding). A window that already exists keeps its old blur, so restart Vicinae after changing these.
+  - Compact mode stays off: without layer-shell the window keeps its full size, so the blur paints an empty glass block under the search bar.
 - **Wallpaper:** MacTahoe day (light) and night (dark), installed by `wallpaper/install-gnome-backgrounds.sh` into `~/.local/share/backgrounds/MacTahoe`. The WhiteSur-wallpapers collection is installed too.
   - That installer only copies the images. To make them show up in Settings → Appearance as light/dark pairs, they are registered in `~/.local/share/gnome-background-properties/macos-wallpapers.xml` (WhiteSur, Monterey, Ventura, Sonoma, plus the two originals).
 - **Login screen (GDM):** installed with `sudo ./tweaks.sh -g -i apple -h smaller`.
@@ -97,5 +103,5 @@ A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliui
 
 ## Pending
 
+- Follow up on vicinaehq/vicinae#2112: a selected row's accessory text ("Application", "Command") stays `text.muted`, grey on the MacTahoe theme's blue selection. Once fixed upstream, nothing changes on our side: the theme already sets `list.item.selection.secondary_foreground`.
 - Auto-switching light/dark across GTK3, shell and icons together is not implemented; only libadwaita follows `color-scheme`.
-- Follow up on Blur my Shell PR #1065: answer review comments, or port the fix to `refactor/unified-blur-backend` if the maintainers prefer. If it merges, the local `make install` build can be replaced by the official release.

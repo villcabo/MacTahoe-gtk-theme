@@ -28,22 +28,21 @@ $toggle_bg_color: if($trans =='true', rgba(white, 0.15), $popover_bg_color);
 $toggle_menu_bg_color: if($trans =='true', rgba(white, 0.25), $popover_bg_color);
 $toggle_hover_bg_color: if($trans =='true', rgba(white, 0.2), mix($fg_color, $popover_bg_color, 10%));
 $toggle_active_bg_color: if($trans =='true', rgba(white, 0.25), mix($fg_color, $popover_bg_color, 15%));
-$toggle_checked_bg_color: if($trans =='true', white, $primary_color);
-$toggle_checked_fg_color: if($trans =='true', $primary_color, white);
+// An active toggle keeps its glass module and lights up its icon circle in the
+// accent colour, as in macOS's Control Center.
+$toggle_checked_bg_color: $primary_color;
+$toggle_checked_fg_color: white;
 $toggle_menu_checked_bg_color: if($trans =='true', rgba(white, 0.15), $popover_bg_color);
 $toggle_shadow: if($trans =='true', inset 0 0 4px rgba(white, 0.35), 0 5px 10px 0 rgba(black, 0.18));
 
 // The transparent palette above assumes dark glass. Light glass needs dark
-// content, as in macOS's light Control Center: translucent white modules and
-// accent-filled active toggles.
+// content, as in macOS's light Control Center: translucent white modules.
 @if $trans =='true' and $variant =='light' {
   $toggle_fg_color: rgba(black, 0.85);
   $toggle_bg_color: rgba(white, 0.45);
   $toggle_menu_bg_color: rgba(white, 0.6);
   $toggle_hover_bg_color: rgba(white, 0.6);
   $toggle_active_bg_color: rgba(white, 0.75);
-  $toggle_checked_bg_color: $primary_color;
-  $toggle_checked_fg_color: white;
   $toggle_menu_checked_bg_color: rgba(white, 0.6);
   $toggle_shadow: inset 0 0 0 1px rgba(white, 0.5);
 }
@@ -74,31 +73,17 @@ $toggle_shadow: if($trans =='true', inset 0 0 4px rgba(white, 0.35), 0 5px 10px 
   }
 
   &:checked {
-    background-color: $toggle_checked_bg_color !important;
-    color: $toggle_checked_fg_color;
+    background-color: $toggle_bg_color !important;
+    color: $toggle_fg_color;
 
     &:hover {
-      color: $toggle_checked_fg_color;
-
-      @if $shell_version =='old' {
-        background-color: mix($text_color, $toggle_checked_bg_color, 6%) !important;
-      }
-
-      @else {
-        background-color: st-mix($text_color, $toggle_checked_bg_color, 6%) !important;
-      }
+      background-color: $toggle_hover_bg_color !important;
+      color: $toggle_fg_color;
     }
 
     &:active {
-      color: $toggle_checked_fg_color;
-
-      @if $shell_version =='old' {
-        background-color: mix($text_color, $toggle_checked_bg_color, 15%) !important;
-      }
-
-      @else {
-        background-color: st-mix($text_color, $toggle_checked_bg_color, 15%) !important;
-      }
+      background-color: $toggle_active_bg_color !important;
+      color: $toggle_fg_color;
     }
   }
 
@@ -117,11 +102,11 @@ $toggle_shadow: if($trans =='true', inset 0 0 4px rgba(white, 0.35), 0 5px 10px 
   }
 
   &:ltr > StBoxLayout {
-    padding-left: $base_padding * 5;
+    padding-left: 0;
   }
 
   &:rtl > StBoxLayout {
-    padding-right: $base_padding * 5;
+    padding-right: 0;
   }
 
   .quick-toggle-title {
@@ -135,6 +120,42 @@ $toggle_shadow: if($trans =='true', inset 0 0 4px rgba(white, 0.35), 0 5px 10px 
 
   .quick-toggle-icon {
     icon-size: $base_icon_size;
+    border-radius: $circular_radius;
+    min-height: 40px !important;
+    min-width: 40px !important;
+    background-color: $toggle_bg_color;
+    transition: none;
+  }
+
+  &:hover .quick-toggle-icon {
+    background-color: $toggle_hover_bg_color;
+  }
+
+  &:active .quick-toggle-icon {
+    background-color: $toggle_active_bg_color;
+  }
+
+  &:checked .quick-toggle-icon {
+    color: $toggle_checked_fg_color;
+    background-color: $toggle_checked_bg_color;
+  }
+}
+
+// These two are buttons that only borrow the toggle's look: no icon circle.
+.quick-settings-system-item .quick-toggle,
+.background-apps-quick-toggle {
+  .quick-toggle-icon {
+    min-height: 0 !important;
+    min-width: 0 !important;
+    background-color: transparent;
+  }
+
+  &:ltr > StBoxLayout {
+    padding-left: $base_padding * 2;
+  }
+
+  &:rtl > StBoxLayout {
+    padding-right: $base_padding * 2;
   }
 }
 
@@ -164,27 +185,6 @@ $toggle_shadow: if($trans =='true', inset 0 0 4px rgba(white, 0.35), 0 5px 10px 
       background: none !important;
       box-shadow: none !important;
       color: $toggle_fg_color;
-    }
-
-    .quick-toggle-icon {
-      border-radius: $circular_radius;
-      min-height: 40px !important;
-      min-width: 40px !important;
-      background-color: $toggle_bg_color;
-      transition: none;
-    }
-
-    &:hover .quick-toggle-icon {
-      background-color: $toggle_hover_bg_color;
-    }
-
-    &:active .quick-toggle-icon {
-      background-color: $toggle_active_bg_color;
-    }
-
-    &:checked .quick-toggle-icon {
-      color: $toggle_checked_fg_color;
-      background-color: $toggle_checked_bg_color;
     }
 
     &:ltr {

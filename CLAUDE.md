@@ -51,7 +51,7 @@ A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliui
 - **Symbolic icons must be fill-only.** Symbolic rendering forces `fill`, so a `stroke` outline renders as a solid blob. Draw outlines as evenodd outer and inner shapes.
 - **St caches icon textures by path.** A changed SVG at the same path shows the old image until re-login; test it under a new filename.
 - **Never call the StatusNotifierWatcher synchronously** from inside gnome-shell. It lives in the shell (appindicators), so the call blocks the shell until the D-Bus timeout. Use async calls only.
-- **kitty must run on X11** (`linux_display_server x11` in `kitty.conf`): on Wayland it draws its own titlebar with grey buttons on the right. On X11 its titlebar comes from `mutter-x11-frames`, gets the theme's traffic lights, and only re-themes after re-login.
+- **kitty stays native Wayland** (`linux_display_server auto` in `kitty.conf`), with its own titlebar and grey buttons on the right. The user tried X11 for the theme's traffic lights (via `mutter-x11-frames`) and rejected it on 2026-10-22: kitty misbehaves under X11. Do not switch it again.
 - **Apps that draw their own titlebar** ignore the theme until set to a native frame: Telegram *Use system window frame*, Obsidian *Window frame style: Native*, Chrome theme *GTK*. Bruno has no such option.
   - VS Code stays on its own (custom) titlebar on purpose. `"window.titleBarStyle": "native"` gives traffic lights, but the menu then needs its own row, which takes too much height for the user; the hamburger menu only exists in the custom titlebar.
   - A macOS-style global menu (app menus in the top bar) is not an option on GNOME 50 Wayland: it needs apps to export their menus over D-Bus (dbusmenu), which Electron and GTK4 apps do not do there.
@@ -79,7 +79,8 @@ A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliui
   - `custom-theme-customize-running-dots=false`, because its dark dots were invisible on the dark dock.
   - `running-indicator-style='DOT'`: macOS shows one dot per running app; `DOTS` showed one per window.
 - `light-style` extension disabled.
-- **Spotlight:** Vicinae (user install in `~/.local`, systemd user service `vicinae`, GNOME extension `vicinae@dagimg-dot`) on `Super+Space` via custom keybinding `custom9` running `vicinae toggle`.
+- **Spotlight:** Vicinae (user install in `~/.local`, systemd user service `vicinae`) on `Super+Space` via custom keybinding `custom9` running `vicinae toggle`. Its tray icon is off (`tray.enabled=false`).
+  - The Vicinae GNOME extension (`vicinae@dagimg-dot`) stays **disabled**. It exports `org.gnome.Shell.Extensions.Windows`, the same D-Bus object as `window-calls@domandoman.xyz`, so only one can load. The user's `resize-window` (Super+Alt+R/Y/T/U) and `chrome-tile-profiles.sh` (Super+Alt+O) need window-calls: `resize-window` finds the active window by the `focus` field, which Vicinae's version renames to `has_focus`.
   - `Super+Space` was freed from `switch-input-source` (now only `XF86Keyboard`) and from IBus's `triggers`: with a single keyboard layout neither did anything. Do not give it back to them.
   - Avoid `Ctrl+Space`: VS Code and IDEs use it for completion.
   - Config in `~/.config/vicinae/settings.json`: themes `mactahoe-dark`/`mactahoe-light` (sources in `other/vicinae/`, copied to `~/.local/share/vicinae/themes/`), rounding 26, opacity 0.82, telemetry off, close on focus loss. Vicinae re-reads it only after `systemctl --user restart vicinae`.

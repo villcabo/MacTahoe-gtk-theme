@@ -1,3 +1,4 @@
+import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
@@ -46,7 +47,13 @@ const TRAY_ICON_REPLACEMENTS = [
     {idPrefix: 'TelegramDesktop', iconName: 'mail-send-symbolic'},
     // Chrome's background-apps item: its colour logo tints to a solid disc.
     {idPrefix: 'chrome_status_icon', iconName: 'google-chrome-symbolic'},
+    // KeePassXC's "monochrome" icon is a filled disc with a key cut out.
+    {idPrefix: 'KeePassXC', iconName: 'password-manager-symbolic'},
 ];
+
+// macOS shows volume and brightness changes as a pill under the menu bar's
+// right end, not at the bottom centre. Gap from the bar and the screen edge:
+const OSD_GAP = 8;
 
 // AppIndicator creates the panel button only after reading a new item's
 // properties, so replacing right on registration would miss it.
@@ -152,7 +159,15 @@ export default class TahoeMenuBarExtension extends Extension {
             [this._backgroundSettings, this._backgroundSettings.connect('changed', () => this._update())],
             [this._interfaceSettings, this._interfaceSettings.connect('changed::color-scheme', () => this._update())],
             [Main.layoutManager, Main.layoutManager.connect('monitors-changed', () => this._update())],
+            // The OSD manager rebuilds its windows on this signal before we see it.
+            [Main.layoutManager, Main.layoutManager.connect('monitors-changed', () => this._placeOsdWindows())],
+            // Keeps the clock last when another extension appends a status item.
+            [Main.panel._rightBox, Main.panel._rightBox.connect('child-added', () => this._keepClockLast())],
         ];
+        this._moveClockRight();
+        this._placeOsdWindows();
+        // macOS slides notification banners in at the top right.
+        Main.messageTray.bannerAlignment = Clutter.ActorAlign.END;
         this._trayItemSubscription = Gio.DBus.session.signal_subscribe(null, SNI_WATCHER,
             'StatusNotifierItemRegistered', SNI_WATCHER_PATH, null, Gio.DBusSignalFlags.NONE,
             () => this._scheduleTrayIconReplacement());
@@ -170,6 +185,9 @@ export default class TahoeMenuBarExtension extends Extension {
             GLib.source_remove(this._replaceSourceId);
         for (const [actor, handlerId] of this._watchedIconActors)
             actor.disconnect(handlerId);
+        this._restoreClock();
+        this._restoreOsdWindows();
+        Main.messageTray.bannerAlignment = Clutter.ActorAlign.CENTER;
         this._setContent(null);
         if (this._traySettings)
             this._setTrayIconReplacements([]);
@@ -182,6 +200,47 @@ export default class TahoeMenuBarExtension extends Extension {
         this._traySettings = null;
         this._interfaceSettings = null;
         this._backgroundSettings = null;
+    }
+
+    // macOS keeps the clock at the far right of the menu bar, after the status
+    // icons; GNOME centres it.
+    _moveClockRight() {
+        const clock = Main.panel.statusArea.dateMenu.container;
+        clock.get_parent()?.remove_child(clock);
+        Main.panel._rightBox.add_child(clock);
+    }
+
+    _keepClockLast() {
+        const clock = Main.panel.statusArea.dateMenu.container;
+        if (clock.get_parent() === Main.panel._rightBox && Main.panel._rightBox.get_last_child() !== clock)
+            Main.panel._rightBox.set_child_above_sibling(clock, null);
+    }
+
+    _restoreClock() {
+        const clock = Main.panel.statusArea.dateMenu.container;
+        clock.get_parent()?.remove_child(clock);
+        Main.panel._centerBox.insert_child_at_index(clock, 0);
+    }
+
+    _placeOsdWindows() {
+        const top = Main.panel.height + OSD_GAP;
+        for (const osdWindow of Main.osdWindowManager._osdWindows) {
+            if (!osdWindow)
+                continue;
+            osdWindow.x_align = Clutter.ActorAlign.END;
+            osdWindow.y_align = Clutter.ActorAlign.START;
+            osdWindow._hbox.set_style(`margin: ${top}px ${OSD_GAP}px 0 0;`);
+        }
+    }
+
+    _restoreOsdWindows() {
+        for (const osdWindow of Main.osdWindowManager._osdWindows) {
+            if (!osdWindow)
+                continue;
+            osdWindow.x_align = Clutter.ActorAlign.CENTER;
+            osdWindow.y_align = Clutter.ActorAlign.END;
+            osdWindow._hbox.set_style(null);
+        }
     }
 
     _wallpaperUri() {

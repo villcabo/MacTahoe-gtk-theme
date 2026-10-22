@@ -1,6 +1,6 @@
 {
   "uuid": "tahoe-menubar@mactahoe",
   "name": "Tahoe Menu Bar",
-  "description": "Switches the MacTahoe top bar between dark and light content depending on how bright the wallpaper is behind it.",
+  "description": "Switches the MacTahoe top bar between dark and light content depending on how bright the wallpaper is behind it, and lays out the clock, OSD and notification banners as on macOS.",
   "shell-version": ["50"]
 }

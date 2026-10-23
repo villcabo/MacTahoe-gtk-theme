@@ -58,7 +58,7 @@ fi
 SUDO_BIN="$(command -v sudo)"
 
 #-------------Theme---------------#
-THEME_NAME="MacTahoe"
+THEME_NAME="MacTahoe-Glass"
 COMMAND_COLOR_VARIANTS=('light' 'dark')
 COLOR_VARIANTS=('Light' 'Dark')
 OPACITY_VARIANTS=('normal' 'solid')

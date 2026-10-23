@@ -6,6 +6,7 @@ Guidance for Claude Code when working in this repository.
 
 A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliuice/MacTahoe-gtk-theme) whose goal is to make Ubuntu 26.04 / GNOME Shell 50 (Wayland) look like **macOS 26 Tahoe**, in both light and dark.
 
+- Published as **MacTahoe Glass**: `THEME_NAME="MacTahoe-Glass"` in `libs/lib-core.sh`, so it installs as `MacTahoe-Glass-*` next to the original. Icons stay the separate MacTahoe icon theme (`MacTahoe-dark`/`MacTahoe-light`). Generic fixes go upstream as PRs first (vinceliuice/MacTahoe-gtk-theme#155, #156).
 - Fork: `villcabo/MacTahoe-gtk-theme`, branch **`tahoe`** (default branch). One branch holds both variants: the SCSS compiles light and dark from the same sources, so never split work into per-variant branches.
 - Remotes: `origin` = the fork, `upstream` = vinceliuice. Sync with `git fetch upstream && git rebase upstream/main` (a force-push follows).
 - Sibling forks used by the same setup:
@@ -92,8 +93,8 @@ A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliui
   - On Ubuntu this overwrites `/usr/share/gnome-shell/theme/Yaru/gnome-shell-theme.gresource` (backup `.bak` next to it). That same file is the base stylesheet the Ubuntu session loads under user themes, so Yaru's forced panel `!important` rules are gone from it too.
   - Revert with `sudo ./tweaks.sh -g -r`.
   - A `yaru-theme-gnome-shell` package update restores Ubuntu's login, so re-run the command afterwards.
-- **Light mode:** gtk `MacTahoe-Light-solid`, shell `MacTahoe-Light`, icons `MacTahoe-light`, color-scheme `default`.
-- **Dark mode:** gtk `MacTahoe-Dark-solid`, shell `MacTahoe-Dark`, icons `MacTahoe-dark`, color-scheme `prefer-dark`.
+- **Light mode:** gtk `MacTahoe-Glass-Light-solid`, shell `MacTahoe-Glass-Light`, icons `MacTahoe-light`, color-scheme `default`.
+- **Dark mode:** gtk `MacTahoe-Glass-Dark-solid`, shell `MacTahoe-Glass-Dark`, icons `MacTahoe-dark`, color-scheme `prefer-dark`.
 
 ## Dead ends — do not retry
 

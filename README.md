@@ -6,6 +6,23 @@ A macOS Tahoe like theme for Linux GTK Desktops
 Based on WhiteSur GTK Theme:
 [https://github.com/vinceliuice/WhiteSur-gtk-theme](https://github.com/vinceliuice/WhiteSur-gtk-theme)
 
+## About MacTahoe Glass
+
+MacTahoe Glass is a fork of [MacTahoe](https://github.com/vinceliuice/MacTahoe-gtk-theme) by vinceliuice, tuned for GNOME Shell 50 on Ubuntu. It installs as `MacTahoe-Glass-*`, so it can sit next to the original theme. All credit for the base theme goes to vinceliuice and the WhiteSur developers.
+
+What it adds:
+
+- A transparent top bar whose content turns dark or light depending on the wallpaper behind it, and that overrides the panel colours Ubuntu's Yaru forces.
+- Quick settings in the style of macOS's Control Center: glass modules, and an accent-coloured icon circle for active toggles.
+- The `tahoe-menubar` GNOME Shell extension, installed together with the theme:
+  - an Apple menu and the focused app's name in bold, on the left of the bar;
+  - the clock at the far right, the volume and brightness OSD under the bar, and notifications at the top right;
+  - monochrome tray icons tinted like the status icons, with line glyphs for common apps.
+- One neutral running dot per app in the Dock.
+- Light and dark Vicinae launcher themes in `other/vicinae/`.
+
+Install it the same way as MacTahoe (see below), for example `./install.sh --round --shell -i apple -h smaller`. Changes from the extension load after logging out and back in.
+
 ## Donate
 
 If you like my project, you can buy me a coffee, many thanks ❤️ !

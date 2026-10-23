@@ -78,7 +78,8 @@ A personal fork of [vinceliuice/MacTahoe-gtk-theme](https://github.com/vinceliui
 - **Ubuntu Dock:**
   - `custom-background-color=false` and `transparency-mode=DEFAULT`, because its inline style overrode the theme.
   - `custom-theme-customize-running-dots=false`, because its dark dots were invisible on the dark dock.
-  - `running-indicator-style='DOT'`: macOS shows one dot per running app; `DOTS` showed one per window.
+  - Windows of an app (chosen by the user on 2026-10-23, all four together): `running-indicator-style='DOTS'` (one dot per window, up to 4; macOS shows one per app, but the user wants the count at a glance); `click-action='cycle-windows'` (first click focuses the last window, as macOS does; further clicks go to the next window); `scroll-action='cycle-windows'`; right-click > All Windows lists thumbnail previews (`show-windows-preview=true`, `preview-size-scale=0.15`).
+  - Rejected for the click: `focus-or-previews` (its preview strip overflows the screen with many windows, kitty has ~9, and shows no way to scroll; `preview-size-scale` was 0.61, previews almost full-size) and `focus-or-appspread` (the user disliked the app spread on a plain click; macOS keeps App Exposé off the click too).
 - `light-style` extension disabled.
 - **Spotlight:** Vicinae (user install in `~/.local`, systemd user service `vicinae`) on `Super+Space` via custom keybinding `custom9` running `vicinae toggle`. Its tray icon is off (`tray.enabled=false`).
   - The Vicinae GNOME extension (`vicinae@dagimg-dot`) stays **disabled**. It exports `org.gnome.Shell.Extensions.Windows`, the same D-Bus object as `window-calls@domandoman.xyz`, so only one can load. The user's `resize-window` (Super+Alt+R/Y/T/U) and `chrome-tile-profiles.sh` (Super+Alt+O) need window-calls: `resize-window` finds the active window by the `focus` field, which Vicinae's version renames to `has_focus`.

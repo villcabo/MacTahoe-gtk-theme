@@ -1,22 +1,25 @@
 /* Screen Shield */
 
+// macOS Tahoe: a small semibold date sits right above a large heavy time.
+// The tahoe-lockscreen extension moves the date above the time.
 .unlock-dialog-clock {
   color: white;
   font-weight: 300;
   text-align: center;
-  spacing: 24px;
+  spacing: 2px;
+  padding-top: 42px;
   padding-bottom: 2.5em;
 }
 
 .unlock-dialog-clock-time {
-  font-size: 64pt;
-  padding-top: 42px;
+  font-size: 88pt;
+  font-weight: 600;
   font-feature-settings: "tnum";
 }
 
 .unlock-dialog-clock-date {
-  font-size: 16pt;
-  font-weight: normal;
+  font-size: 18pt;
+  font-weight: 600;
 }
 
 .unlock-dialog-clock-hint {

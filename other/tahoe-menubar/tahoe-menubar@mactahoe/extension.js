@@ -223,7 +223,11 @@ export default class TahoeMenuBarExtension extends Extension {
         this._appMenu.destroy();
         this._appleMenu = null;
         this._appMenu = null;
-        Main.panel.statusArea.activities.container.show();
+        // Locking disables this extension after GNOME lays out the lock screen
+        // panel, which has no Activities button; showing it there would put the
+        // workspace dots on the lock screen.
+        if (!Main.sessionMode.isLocked)
+            Main.panel.statusArea.activities.container.show();
     }
 
     // macOS keeps the clock at the far right of the menu bar, after the status

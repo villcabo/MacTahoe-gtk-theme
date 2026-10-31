@@ -1,0 +1,7 @@
+{
+  "uuid": "tahoe-lockscreen@mactahoe",
+  "name": "Tahoe Lock Screen",
+  "description": "Shows the lock screen wallpaper sharp and only slightly dimmed, as on macOS, instead of GNOME's heavy blur. Runs only while the session is locked.",
+  "shell-version": ["50"],
+  "session-modes": ["unlock-dialog"]
+}

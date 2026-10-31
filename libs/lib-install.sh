@@ -603,21 +603,30 @@ install_app() {
   cp -r "${REPO_DIR}/other/gnome-theme-switcher/org.gnome.GTK4ThemeSwitcher.desktop" "${APP_DIR}"
 }
 
-MENUBAR_EXTENSION_UUID="tahoe-menubar@mactahoe"
+# GNOME Shell extensions shipped with the theme, as other/<dir>/<uuid>.
+SHELL_EXTENSIONS=("tahoe-menubar/tahoe-menubar@mactahoe" "tahoe-lockscreen/tahoe-lockscreen@mactahoe")
 
 install_menubar_extension() {
-  prompt -w "\n  Installing '${MENUBAR_EXTENSION_UUID}' GNOME Shell extension...\n"
+  local extension uuid
 
-  rm -rf "${GNOME_SHELL_EXTENSION_DIR}/${MENUBAR_EXTENSION_UUID}"
   mkdir -p "${GNOME_SHELL_EXTENSION_DIR}"
-  cp -r "${REPO_DIR}/other/tahoe-menubar/${MENUBAR_EXTENSION_UUID}" "${GNOME_SHELL_EXTENSION_DIR}"
+  for extension in "${SHELL_EXTENSIONS[@]}"; do
+    uuid="${extension#*/}"
+    prompt -w "\n  Installing '${uuid}' GNOME Shell extension...\n"
+    rm -rf "${GNOME_SHELL_EXTENSION_DIR}/${uuid}"
+    cp -r "${REPO_DIR}/other/${extension}" "${GNOME_SHELL_EXTENSION_DIR}"
+  done
 
   # GNOME Shell only discovers new extensions at login on Wayland.
-  prompt -i "  Log out and back in, then run: gnome-extensions enable ${MENUBAR_EXTENSION_UUID}"
+  prompt -i "  Log out and back in, then run: gnome-extensions enable <uuid> for each of: ${SHELL_EXTENSIONS[*]#*/}"
 }
 
 remove_menubar_extension() {
-  rm -rf "${GNOME_SHELL_EXTENSION_DIR}/${MENUBAR_EXTENSION_UUID}"
+  local extension
+
+  for extension in "${SHELL_EXTENSIONS[@]}"; do
+    rm -rf "${GNOME_SHELL_EXTENSION_DIR}/${extension#*/}"
+  done
 }
 
 ###############################################################################

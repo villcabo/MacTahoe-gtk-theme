@@ -169,6 +169,7 @@ export default class TahoeMenuBarExtension extends Extension {
         this._addAppleMenus();
         this._moveClockRight();
         this._placeOsdWindows();
+        this._quietBrightnessOsd();
         // macOS slides notification banners in at the top right.
         Main.messageTray.bannerAlignment = Clutter.ActorAlign.END;
         this._trayItemSubscription = Gio.DBus.session.signal_subscribe(null, SNI_WATCHER,
@@ -191,6 +192,7 @@ export default class TahoeMenuBarExtension extends Extension {
         this._removeAppleMenus();
         this._restoreClock();
         this._restoreOsdWindows();
+        this._restoreBrightnessOsd();
         Main.messageTray.bannerAlignment = Clutter.ActorAlign.CENTER;
         this._setContent(null);
         if (this._traySettings)
@@ -263,6 +265,27 @@ export default class TahoeMenuBarExtension extends Extension {
             osdWindow.y_align = Clutter.ActorAlign.END;
             osdWindow._hbox.set_style(null);
         }
+    }
+
+    // GNOME shows the brightness OSD for every change, the quick settings
+    // slider included. macOS shows no HUD while its Control Center slider is in
+    // view, so the OSD is skipped while quick settings is open; keys still show it.
+    _quietBrightnessOsd() {
+        const manager = Main.brightnessManager;
+        if (!manager)
+            return;
+
+        const showOSD = manager._showOSD;
+        manager._showOSD = function (...args) {
+            if (!Main.panel.statusArea.quickSettings.menu.isOpen)
+                showOSD.apply(this, args);
+        };
+    }
+
+    _restoreBrightnessOsd() {
+        // The override is an own property shadowing the prototype's method.
+        if (Main.brightnessManager)
+            delete Main.brightnessManager._showOSD;
     }
 
     _wallpaperUri() {

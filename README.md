@@ -23,6 +23,8 @@ What it adds:
 
 Install it the same way as MacTahoe (see below), for example `./install.sh --round --shell -i apple -h smaller`. Changes from the extension load after logging out and back in.
 
+The rest of the look comes from GNOME Shell extensions and their settings, kept in `other/gnome-desktop/`: `extensions.tsv` lists them (User Themes, Blur my Shell, Ubuntu Dock or Dash to Dock, AppIndicator, Rounded Window Corners Reborn), and `dconf/` holds their settings. After installing the theme, run `other/gnome-desktop/apply.sh` (or `apply.sh --dry-run` to see what it would do): it asks GNOME to install the missing extensions, enables them and loads the settings.
+
 ## Donate
 
 If you like my project, you can buy me a coffee, many thanks ❤️ !

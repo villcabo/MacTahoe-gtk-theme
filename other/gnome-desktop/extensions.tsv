@@ -1,0 +1,11 @@
+# GNOME Shell extensions the MacTahoe Glass desktop depends on, for GNOME Shell 50.
+# ego_id is the extensions.gnome.org id (https://extensions.gnome.org/extension/<ego_id>/);
+# "bundled" means install.sh ships it; "ubuntu" means Ubuntu ships it with the system.
+# Columns are tab-separated: uuid, ego_id, required, settings file in dconf/, role.
+uuid	ego_id	required	settings	role
+user-theme@gnome-shell-extensions.gcampax.github.com	19	yes	user-theme.ini	Loads the MacTahoe-Glass GNOME Shell theme
+tahoe-menubar@mactahoe	bundled	yes	-	Apple menu, app name, clock/OSD/banner placement, tinted tray icons
+blur-my-shell@aunetx	3193	yes	blur-my-shell.ini	Glass behind the top bar, popups, the dock and Vicinae (v76 or newer)
+ubuntu-dock@ubuntu.com	ubuntu	yes	dash-to-dock.ini	The Dock; outside Ubuntu use dash-to-dock@micxgx.gmail.com (ego 307), same settings
+ubuntu-appindicators@ubuntu.com	ubuntu	yes	appindicator.ini	Tray icons; outside Ubuntu use appindicatorsupport@rgcjonas.gmail.com (ego 615), same settings
+rounded-window-corners@fxgn	7048	yes	rounded-window-corners.ini	macOS window shadow, 26 px corners and thin border, also for apps that draw none (kitty)

@@ -450,8 +450,12 @@ export default class TahoeMenuBarExtension extends Extension {
     }
 
     _dropStalePixmap(actor) {
-        if (actor.gicon && actor.content)
+        if (actor.gicon && actor.content) {
             actor.content = null;
+            // The tray button keeps the pixmap's larger width cached, which
+            // shows up as a wider gap around this icon in the bar.
+            actor.queue_relayout();
+        }
     }
 
     // Keeps any custom-icons entries the user set by hand; only entries whose

@@ -296,7 +296,9 @@ $menubar_light_active: rgba(white, 0.28);
         // transition-duration: 150ms;
         border-radius: $circular_radius;
         background-color: transparent;
-        padding: 0 $base_padding + 12px !important;
+        // macOS keeps the clock as close to its neighbours as any other
+        // menu bar item; 16px here left a ~50px hole after quick settings.
+        padding: 0 6px !important;
         margin: 0 !important;
         border: $container_padding solid transparent !important;
 
@@ -340,11 +342,11 @@ $menubar_light_active: rgba(white, 0.28);
       margin: 0 $base_padding;
     }
 
-    // Split evenly so the icon stays centred in the button's hover pill; a
-    // one-sided margin pushed it 6px off-centre. The rgcjonas-specific
-    // override below never matches Ubuntu's appindicators fork.
+    // No margin: the button's own padding centres the icon in its hover pill
+    // (a one-sided margin pushed it 6px off-centre), and every extra pixel
+    // here is paid once per tray icon. See the tray button rule below.
     .appindicator-box {
-      margin: 0 $base_padding * 1.5;
+      margin: 0;
     }
 
     // .panel-status-indicators-box,
@@ -437,8 +439,21 @@ $menubar_light_active: rgba(white, 0.28);
   Gjs_ui_panel_AggregateMenu.panel-button,
   Gjs_ui_panel_QuickSettings.panel-button {
     .system-status-icon {
-      margin: 0 $base_padding / 2 !important;
+      margin: 0 !important;
     }
+  }
+
+  // Even spacing across the right side, like macOS: quick-settings icons
+  // ~15px apart (as the tray icons), the clock ~20px after them and ~13px
+  // from the screen edge. The clock's own pill padding provides its margin.
+  Gjs_ui_panel_QuickSettings.panel-button {
+    -natural-hpadding: 6px !important;
+    -minimum-hpadding: 6px !important;
+  }
+
+  Gjs_ui_dateMenu_DateMenuButton.panel-button {
+    -natural-hpadding: 0 !important;
+    -minimum-hpadding: 0 !important;
   }
 
   Gjs_ui_panel_AppMenuButton.panel-button,
@@ -453,6 +468,17 @@ $menubar_light_active: rgba(white, 0.28);
     // Ibus
     -natural-hpadding: 12px + $base_padding !important;
     -minimum-hpadding: 12px + $base_padding !important;
+  }
+
+  // Ubuntu's appindicators fork. GNOME caps each side of the bar at half its
+  // width (Panel.vfunc_allocate), even with an empty centre, so at 52px per
+  // tray icon eight of them pushed the clock off the screen. 30px matches the
+  // tight spacing of macOS menu bar extras. Only applies with the extension's
+  // compact-mode-enabled off: compact mode sets an inline 10px hpadding that
+  // beats any theme rule (see other/gnome-desktop/dconf/appindicator.ini).
+  Gjs_ubuntu-appindicators_ubuntu_com_indicatorStatusIcon_IndicatorStatusIcon.panel-button {
+    -natural-hpadding: 7px !important;
+    -minimum-hpadding: 7px !important;
   }
 
   Gjs_appindicatorsupport_rgcjonas_gmail_com_indicatorStatusIcon_IndicatorStatusIcon.panel-button,
